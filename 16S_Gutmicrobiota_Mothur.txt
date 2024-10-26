@@ -1,0 +1,163 @@
+Fadoum Ousmane LY 												04/12/2023					
+M1 ST2AE 												UE: Bio-informatique
+
+
+TP Mothur: Identification de la taxonomie du microbiote intestinal (séquences 16S paired-end)  	
+
+
+#Definition du repertoire de travail (input et output)
+set.dir(input=C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP)
+set.dir(output=C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP)
+
+#Créer les contigs 
+make.contigs(file=stability.files)
+#On obtient les fichiers suivants:
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.fasta #Contient les seq alignées 
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.scrap.contigs.fasta
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.contigs_report
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.contigs.count_table
+
+#Pour génerer un rapport de distribution des tailles des sequences = permet de voir la longueur min et max des sequences 
+	summary.seqs(fasta=stability.trim.contigs.fasta)
+
+#Nettoyer les sequences 
+	screen.seqs(fasta=stability.trim.contigs.fasta, group=stability.contigs.count_table, maxambig=0, maxlength=275)
+On a: It tooks 1 sec to screen 152360 sequenquences and 15% were remove.
+
+#On obtient les fichiers suivants:
+Output File Names:
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.contigs.pick.count_table
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.fasta
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.bad.accnos
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.contigs.good.count_table
+
+#On fait une comparaison avec la distribution qui a été obtenue avec les sequences non nettoyées
+	summary.seqs(fasta=stability.trim.contigs.good.fasta)
+
+#On genere un fichier contenant les sequences uniques
+unique.seqs(fasta=current,count=current)
+#On obtient les fichiers suivants:
+Output File Names:
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.fasta
+C:\Users\U31904892\Documents\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.count_table #Tableau des sequences uniques selon les echantillons 
+
+#Redefinir l'espace de travail 13H30 et mettre le fichier silvabacteria dans le meme dossier qui contient notre fichier fasta contenant les sequences fasta nettoyées
+	set.dir(input=C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP)
+	set.dir(output=C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP)
+
+#Aligner les séquences de notre fasta grace au fichier silva
+	align.seqs(fasta=stability.trim.contigs.good.unique.fasta, reference=silva.bacteria.fasta)
+On obtient:
+It took 54 secs to align 16426 sequences.
+
+
+It took 54 seconds to align 16426 sequences.
+
+Output File Names:
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.align
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.align_repo
+
+#Pour determiner la position max des sequences et de voir la longueur des bases 
+summary.seqs(fasta=current)
+
+#Pour la suite, on choisit uniquement le debut et la fin de la position des sequencences au lieu de prendre tout le gene 16S
+#maxhomp=8 permet de supprimer le biais de séquencage (les homopolymères)
+	screen.seqs(fasta=stability.trim.contigs.good.unique.align, start=13862, end=23444, maxhomop=8)
+
+It took 2 secs to screen 16426 sequences, removed 126.
+
+On obtient les fichiers:
+
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.align
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.bad.accnos
+
+Le fichier fasta contenant les sequences alignées  contient des points qui veulent dire des zones non alignées. 
+
+#Eliminer les points de notre alignement 
+	filter.seqs(fasta=stability.trim.contigs.good.unique.good.align, vertical=T, trump=.)
+
+On obtient les fichiers suivants:
+1 C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.filter
+2 C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.fasta
+
+Le 2ème fichier contient les sequences nettoyées et a une taille de 6Mo alors qu'il faisait 800Mo.
+
+#On refait les séquences uniques pour suprimmer les doublons 
+	unique.seqs(fasta=stability.trim.contigs.good.unique.good.filter.fasta)
+
+#On obtient les fichiers suivants:
+16300   16297=> ca veut dire dire que 3 sequences on été supprimées car ce sont des doublons 
+Output File Names:
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.unique.fasta
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.count_table
+
+#On réduit le nombre de séquences à regrouper 
+	pre.cluster(fasta=stability.trim.contigs.good.unique.good.filter.unique.fasta, count =stability.trim.contigs.good.unique.good.filter.count_table ,diffs=2)
+
+On obtient: 16297   15018   1279 cad on avait 1279 sequences qui ont été enlever des 16297. Il y avait probablement trop d'erreurs de la polymérase.
+
+Output File Names:
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta
+
+#Enlever les chimères 
+	chimera.vsearch(fasta=current, count =current, dereplicate=t)
+	chimera.vsearch(fasta=stability.trim.contigs.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.good.unique.good.filter.count_table, dereplicate=t)
+
+On obtient:
+It took 6 secs to check your sequences. 82 chimeras were found.
+82 chimeres ont été trouvés. 
+remove.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.fasta, accnos=stability.trim.contigs.good.unique.good.filter.unique.denovo.vsearch.accnos, count=stability.trim.contigs.good.unique.good.filter.count_table)
+On obtient:
+Removed 82 sequences. Les 82 chimeres ont été éliminées. 
+Output File Names:
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.unique.pick.fasta
+C:\Users\U31904892\Downloads\TP MOTHUR\TP MOTHUR\miseqsopdata\MiSeq_SOP\stability.trim.contigs.good.unique.good.filter.pick.count_tableOutput File Names:
+
+#Détermination de la taxonomie des nos sequences: On se base sur les fichiers trainset09
+La determination de la taxonomie se fait en comprant notre sequence avec les sequences dans trainset correspondant au phylum, si il trouve une ressemblance de 80% avec un phylum, 
+il passe au genre et ainsi de suite...
+-> Otention du tableau des OTUs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+,
